@@ -22,7 +22,8 @@ commits = response.json()
 histogram = defaultdict(int)
 for commit in commits:
     commit_date_str = commit['commit']['committer']['date']
-    commit_date = datetime.fromisoformat(commit_date_str).date()
+    commit_date = datetime.strptime(commit_date_str, '%Y-%m-%dT%H:%M:%SZ').date()
+    # commit_date = datetime.fromisoformat(commit_date_str).date()
     histogram[commit_date] += 1
 
 print("Histogram of commits:")
