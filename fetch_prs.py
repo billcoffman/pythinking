@@ -1,3 +1,48 @@
+import json
+
+class API:
+    # ... (other parts of the class) ...
+
+    def fetch_all_prs_and_reviews(self):
+        all_prs_data = []
+        pr_cursor = None  # Start with no cursor for the first page of PRs
+        pr_has_next_page = True  # Assume there is at least one page of PRs
+        pr_count = 0
+        review_count = 0
+
+        # Fetch all PRs and their reviews
+        while pr_has_next_page:
+            pr_data = self.fetch_record(review_cursor=None, pr_cursor=pr_cursor)
+            prs = pr_data['data']['repository']['pullRequests']['edges']
+            
+            for pr in prs:
+                pr_count += 1
+                pr_number = pr['node']['number']
+                reviews_data = pr['node']['reviews']['edges']
+                review_page_info = pr['node']['reviews']['pageInfo']
+                review_cursor = review_page_info['endCursor']
+
+                # Fetch additional reviews for the PR if they exist
+                while review_page_info['hasNextPage']:
+                    additional_reviews_data = self.fetch_record(review_cursor=review_cursor, pr_cursor=None)
+                    additional_reviews = additional_reviews_data['data']['repository']['pullRequests']['edges'][0]['node']['reviews']['edges']
+                    review_count += len(additional_reviews)
+                    reviews_data.extend(additional_reviews)
+                    review_page_info = additional_reviews_data['data']['repository']['pullRequests']['edges'][0]['node']['reviews']['pageInfo']
+                    review_cursor = review_page_info['endCursor']  # Ready for next pass, or ignored if no next page.
+
+                # Combine the PR with all its reviews
+                pr['node']['reviews']['edges'] = reviews_data  # Replace with combined reviews data.
+                # Here you can process the PR and its reviews, e.g., print or save them
+                extract_pr_and_reviews(pr)  # Dump the combined PR and reviews data
+            
+            # If there are no more PRs to fetch, break the loop
+            pr_page_info = pr_data['data']['repository']['pullRequests']['pageInfo']
+            pr_cursor = pr_page_info['endCursor']  # Set cursor for the next page of PRs
+            pr_has_next_page = pr_page_info['hasNextPage']
+
+        return
+
 pr_query = """
 query($repoName: String!, $owner: String!, $afterCursor: String) {
   repository(name: $repoName, owner: $owner) {
