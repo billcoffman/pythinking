@@ -58,3 +58,11 @@ else
   echo "Branch $BRANCH_NAME does not exist."
   exit 1
 fi
+
+
+git log --pretty=format:"%h %ad | %s [%an]" --date=short | while read line; do
+    commit_hash=`echo $line | awk '{print $1}'`
+    branches=$(git branch --contains $commit_hash | sed 's/^\* //g' | tr '\n' ' ')
+    echo "$line | $branches"
+done
+
