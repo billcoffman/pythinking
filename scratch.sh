@@ -114,3 +114,32 @@ while true; do
         break
     fi
 done
+
+
+
+
+
+#!/bin/bash
+
+# Get the list of commits
+commits=($(git log --first-parent --format="%H" branch-name))
+
+# Initialize positions
+pos1=0
+pos2=${#commits[@]}-1
+
+# Bisection search
+while [ $((pos2 - pos1)) -gt 1 ]; do
+    mid=$(((pos1 + pos2) / 2))
+    mid_commit=${commits[$mid]}
+    count=$(git branch -r --contains $mid_commit | wc -l)
+
+    if [ "$count" -gt 1 ]; then
+        pos1=$mid
+    else
+        pos2=$mid
+    fi
+done
+
+# Output the commit where branches transition from many to one
+echo "Transition at commit: ${commits[$pos2]}"
