@@ -66,3 +66,51 @@ git log --pretty=format:"%h %ad | %s [%an]" --date=short | while read line; do
     echo "$line | $branches"
 done
 
+
+
+#!/bin/bash
+branch_name="your-branch"
+r=1.5
+commits=() # Initialize an empty array
+index=0
+pos1=0
+pos2=0
+
+# Function to determine if a commit hash is associated with multiple branches
+multiple_branches() {
+    local commit_hash=$1
+    count=$(git branch -r --contains "$commit_hash" | wc -l)
+    [ "$count" -gt 1 ]
+}
+
+# Function to fetch a single commit hash at a specific index
+get_hash() {
+    local idx=$1
+    git log --first-parent --format="%H" $branch_name | sed "${idx}q;d"
+}
+
+# Start by fetching the first commit
+h=$(get_hash 1)
+commits[index]=$h
+
+while true; do
+    if [ $index -ge $pos2 ]; then
+        if multiple_branches "${commits[$index]}"; then
+            pos2=$index
+        else
+            pos1=$index
+            pos2=$(awk "BEGIN{print int(($pos2 + 1) * $r)}")  # Calculate new pos2
+        fi
+    fi
+
+    # Increment index and fetch next commit
+    index=$((index + 1))
+    h=$(get_hash $index)
+    commits[index]=$h
+
+    # Break if pos1 and pos2 converge
+    if [ $((pos2 - pos1)) -le 1 ]; then
+        echo "Transition at commit: ${commits[$pos1]}"
+        break
+    fi
+done
