@@ -143,3 +143,10 @@ done
 
 # Output the commit where branches transition from many to one
 echo "Transition at commit: ${commits[$pos2]}"
+
+
+
+# Class: BranchInquisitor
+# "Nobody expects the Branch Inquisition!" Inspired by Monty Python, this class takes on the solemn duty
+# of meticulously scrutinizing our branches, albeit with an algorithmic zeal that might make even the 
+# Spanish Inquisition think twice. Use with caution: it may require copious computational resources.
