@@ -195,3 +195,21 @@ print(output)
 print("Captured Errors:")
 print(errors)
 
+
+
+git log $HASH -1 --pretty=format:"%ad %H [%an] [%s]" --date=format:"%Y-%m-%dT%H:%M:%S" > line.txt
+
+
+def parse_git_log():
+    with open("line.txt") as line_file:
+        line = line_file.readline()  # Read the single line of output
+        date, hash, bracketed = line.split(" ", 2)  # Split into three parts
+        bracketed = bracketed.strip()  # Strip any leading/trailing whitespace
+        bracketed = bracketed.lstrip("[")  # Remove the first bracket
+        bracketed = bracketed.rstrip("]")  # Remove the last bracket
+        username, comment = bracketed.split("] [")  # Split the username and comment
+        return date, hash, username, comment
+
+# Example usage
+date, hash, username, comment = parse_git_log()
+print(f"Date: {date}, Hash: {hash}, Username: {username}, Comment: {comment}")
