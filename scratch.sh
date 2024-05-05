@@ -146,7 +146,52 @@ echo "Transition at commit: ${commits[$pos2]}"
 
 
 
-# Class: BranchInquisitor
-# "Nobody expects the Branch Inquisition!" Inspired by Monty Python, this class takes on the solemn duty
-# of meticulously scrutinizing our branches, albeit with an algorithmic zeal that might make even the 
-# Spanish Inquisition think twice. Use with caution: it may require copious computational resources.
+import subprocess
+import sys
+
+def run_bash_script(script_path):
+    # Initialize variables to capture output and errors
+    output = []
+    errors = []
+
+    # Start the subprocess
+    with subprocess.Popen([script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as proc:
+        while True:
+            # Read stdout line by line
+            out_line = proc.stdout.readline()
+            if out_line:
+                sys.stdout.write(out_line)  # Print to terminal
+                output.append(out_line)  # Append to output list
+            # Read stderr line by line
+            err_line = proc.stderr.readline()
+            if err_line:
+                sys.stderr.write(err_line)  # Print to terminal
+                errors.append(err_line)  # Append to error list
+
+            # Break out of the loop if the process is done and there are no more lines to read
+            if not out_line and not err_line and proc.poll() is not None:
+                break
+
+        # Optionally handle the case where there might still be data in the buffers
+        stdout_remaining, stderr_remaining = proc.communicate()
+        if stdout_remaining:
+            sys.stdout.write(stdout_remaining)
+            output.append(stdout_remaining)
+        if stderr_remaining:
+            sys.stderr.write(stderr_remaining)
+            errors.append(stderr_remaining)
+
+    # Convert lists of output and errors to single strings
+    output_str = ''.join(output)
+    errors_str = ''.join(errors)
+    
+    return output_str, errors_str
+
+# Usage
+script_path = 'your_script.sh'  # Path to your Bash script
+output, errors = run_bash_script(script_path)
+print("Captured Output:")
+print(output)
+print("Captured Errors:")
+print(errors)
+
