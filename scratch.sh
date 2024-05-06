@@ -213,3 +213,23 @@ def parse_git_log():
 # Example usage
 date, hash, username, comment = parse_git_log()
 print(f"Date: {date}, Hash: {hash}, Username: {username}, Comment: {comment}")
+
+
+
+# Get the linear history of the branch
+commits=$(git log --first-parent --format="%H" BRANCH)
+
+# Assuming we have a way to check branch associations efficiently
+previous_associations=()
+for commit in $commits; do
+  # Fetch branches associated with this commit
+  current_associations=$(efficient_branch_association_check $commit)
+  
+  # Compare current associations with previous
+  if [ ${#current_associations[@]} -lt ${#previous_associations[@]} ]; then
+    echo "Branch created at commit $commit"
+    break
+  fi
+
+  previous_associations=("${current_associations[@]}")
+done
