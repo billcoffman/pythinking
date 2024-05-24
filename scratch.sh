@@ -233,3 +233,23 @@ for commit in $commits; do
 
   previous_associations=("${current_associations[@]}")
 done
+
+
+https://snapcraft.io/install/neovide/rhel
+
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+
+conda create -n neovide_env libxcb libx11 mesa-libGL-devel
+conda activate neovide_env
+
+git clone https://github.com/neovide/neovide.git
+cd neovide
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+
+cargo build --release
+
+./target/release/neovide
+
